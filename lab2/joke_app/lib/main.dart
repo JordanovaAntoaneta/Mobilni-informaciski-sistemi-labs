@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:joke_app/pages/random_joke.dart';
 import 'package:joke_app/service/jokes_service.dart';
 import 'package:provider/provider.dart';
 import 'providers/joke_provider.dart';
@@ -59,22 +60,52 @@ class _HomePageState extends State<HomePage> {
       ),
       body: provider.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-        itemCount: provider.jokeTypes.length,
-        itemBuilder: (context, index) {
-          final type = provider.jokeTypes[index];
-          return JokeCard(
-            type: type,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => JokeListByType(type: type),
+          : Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RandomJokeScreen()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 30.0),
+                textStyle: GoogleFonts.sniglet(
+                  textStyle: const TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.black,
+                  ),
                 ),
-              );
-            },
-          );
-        },
+              ),
+              child: const Text("Random Joke of the Day"),
+            ),
+          ),
+
+          Expanded(
+            child: ListView.builder(
+              itemCount: provider.jokeTypes.length,
+              itemBuilder: (context, index) {
+                final type = provider.jokeTypes[index];
+                return JokeCard(
+                  type: type,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => JokeListByType(type: type),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
