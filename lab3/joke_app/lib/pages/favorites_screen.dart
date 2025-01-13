@@ -21,8 +21,7 @@ class FavoritesScreen extends StatelessWidget {
         itemBuilder: (context, index) {
           final joke = provider.favorites[index];
           return Card(
-            margin:
-            const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             elevation: 4,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
