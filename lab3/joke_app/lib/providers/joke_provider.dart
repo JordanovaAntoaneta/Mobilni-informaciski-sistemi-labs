@@ -1,17 +1,25 @@
-import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
+
 import '../domain/joke.dart';
 import '../service/jokes_service.dart';
 
 class JokeProvider with ChangeNotifier {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final JokesService _service;
 
-  JokeProvider(this._service);
+  JokeProvider(this._service) {
+    fetchFavorites();
+    fetchJokeTypes();
+  }
+
+  final List<Joke> _favorites = [];
+  bool isLoading = true;
+
+  List<Joke> get favorites => _favorites;
 
   List<String> _jokeTypes = [];
   List<String> get jokeTypes => _jokeTypes;
-
-  bool _isLoading = false;
-  bool get isLoading => _isLoading;
 
   List<Joke> _jokesByType = [];
   List<Joke> get jokesByType => _jokesByType;
@@ -19,39 +27,93 @@ class JokeProvider with ChangeNotifier {
   Joke? _randomJoke;
   Joke? get randomJoke => _randomJoke;
 
-  Future<void> fetchJokeTypes() async {
-    _isLoading = true;
-    notifyListeners();
-    _jokeTypes = await _service.getJokeTypes();
-    _isLoading = false;
-    notifyListeners();
-  }
-
+  // Fetch jokes by type
   Future<void> fetchJokesByType(String type) async {
-    _isLoading = true;
+    isLoading = true;
     notifyListeners();
-    _jokesByType = await _service.getJokesByType(type);
-    _isLoading = false;
+    try {
+      _jokesByType = await _service.getJokesByType(type);
+    } catch (e) {
+      // Handle any exceptions (e.g., log the error)
+      print('Error fetching jokes by type: $e');
+    }
+    isLoading = false;
     notifyListeners();
   }
 
+  // Fetch random joke
   Future<void> fetchRandomJoke() async {
-    _isLoading = true;
+    isLoading = true;
     notifyListeners();
-    _randomJoke = await _service.getRandomJoke();
-    _isLoading = false;
+    try {
+      _randomJoke = await _service.getRandomJoke();
+    } catch (e) {
+      // Handle any exceptions
+      print('Error fetching random joke: $e');
+    }
+    isLoading = false;
     notifyListeners();
   }
 
-  final List<Joke> _favorites = [];
-  List<Joke> get favorites => _favorites;
+  // Fetch all joke types
+  Future<void> fetchJokeTypes() async {
+    try {
+      _jokeTypes = await _service.getJokeTypes();
+    } catch (e) {
+      // Handle any exceptions
+      print('Error fetching joke types: $e');
+    }
+    notifyListeners();
+  }
 
-  void toggleFavorite(Joke joke) {
-    joke.isFavorite = !joke.isFavorite;
-    if (joke.isFavorite) {
-      _favorites.add(joke);
+  // Fetch favorites from Firestore
+  Future<void> fetchFavorites() async {
+    try {
+      final snapshot = await _firestore.collection('favorites').get();
+      _favorites.clear();
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        _favorites.add(
+          Joke(
+            setup: data['setup'],
+            punchline: data['punchline'],
+            type: data['type'],
+            isFavorite: true,
+          ),
+        );
+      }
+    } catch (e) {
+      // Handle any exceptions
+      print('Error fetching favorites: $e');
+    }
+    isLoading = false;
+    notifyListeners();
+  }
+
+  // Toggle favorite status for a joke
+  Future<void> toggleFavorite(Joke joke) async {
+    if (_favorites.any((fav) => fav.setup == joke.setup)) {
+      // Remove from favorites
+      _favorites.removeWhere((fav) => fav.setup == joke.setup);
+      try {
+        final snapshot = await _firestore
+            .collection('favorites')
+            .where('setup', isEqualTo: joke.setup)
+            .get();
+        for (var doc in snapshot.docs) {
+          await _firestore.collection('favorites').doc(doc.id).delete();
+        }
+      } catch (e) {
+        print('Error removing joke from favorites: $e');
+      }
     } else {
-      _favorites.remove(joke);
+      // Add to favorites
+      _favorites.add(joke);
+      try {
+        await _firestore.collection('favorites').add(joke.toJson());
+      } catch (e) {
+        print('Error adding joke to favorites: $e');
+      }
     }
     notifyListeners();
   }

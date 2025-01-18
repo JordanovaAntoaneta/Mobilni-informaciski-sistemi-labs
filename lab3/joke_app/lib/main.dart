@@ -1,17 +1,36 @@
+import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:joke_app/pages/favorites_screen.dart';
 import 'package:joke_app/pages/random_joke.dart';
+import 'package:joke_app/service/firebase_api.dart';
 import 'package:joke_app/service/jokes_service.dart';
 import 'package:provider/provider.dart';
 import 'providers/joke_provider.dart';
 import 'pages/joke_list_by_type.dart';
 import 'widgets/joke_card.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'service/firebase_api.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Firebase.initializeApp();
+  await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: 'AIzaSyAkKvDU1dHydrFm57L4AzZGKk9oyVlIpY8',
+        appId: '1:295295855872:android:e48ef8e36c1ac3171e17e5',
+        messagingSenderId: '295295855872',
+        projectId: 'joke-app-lab3',
+        storageBucket: 'joke-app-lab3.firebasestorage.app',
+      )
+  );
+  //await
+  FirebaseApi().initNotifications();
+  // await FirebaseMessaging.instance.requestPermission();
+  // if (Platform.isAndroid) {
+  //   await FirebaseMessaging.instance.setAutoInitEnabled(true);
+  // }
   runApp(const MyApp());
 }
 
