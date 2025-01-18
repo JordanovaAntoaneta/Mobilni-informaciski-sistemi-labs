@@ -57,10 +57,11 @@ class JokeListByType extends StatelessWidget {
                           joke.isFavorite
                               ? Icons.favorite
                               : Icons.favorite_border,
-                          color: joke.isFavorite
-                              ? Colors.red
-                              : Colors.grey,
                         ),
+                        color: joke.isFavorite
+                            ? Colors.red
+                            : Colors.grey,
+                        iconSize: 28,
                         onPressed: () {
                           Provider.of<JokeProvider>(context,
                               listen: false)

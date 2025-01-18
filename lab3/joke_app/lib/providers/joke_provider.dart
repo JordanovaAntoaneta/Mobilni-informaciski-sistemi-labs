@@ -27,12 +27,16 @@ class JokeProvider with ChangeNotifier {
   Joke? _randomJoke;
   Joke? get randomJoke => _randomJoke;
 
-  // Fetch jokes by type
   Future<void> fetchJokesByType(String type) async {
     isLoading = true;
     notifyListeners();
     try {
       _jokesByType = await _service.getJokesByType(type);
+
+      // Update each joke's isFavorite property
+      for (var joke in _jokesByType) {
+        joke.isFavorite = _favorites.any((fav) => fav.setup == joke.setup);
+      }
     } catch (e) {
       print('Error fetching jokes by type: $e');
     }
@@ -40,7 +44,6 @@ class JokeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Fetch random joke
   Future<void> fetchRandomJoke() async {
     isLoading = true;
     notifyListeners();
@@ -57,7 +60,7 @@ class JokeProvider with ChangeNotifier {
     try {
       _jokeTypes = await _service.getJokeTypes();
     } catch (e) {
-      // Handle any exceptions
+
       print('Error fetching joke types: $e');
     }
     notifyListeners();
@@ -86,8 +89,10 @@ class JokeProvider with ChangeNotifier {
   }
 
   Future<void> toggleFavorite(Joke joke) async {
-    if (_favorites.any((fav) => fav.setup == joke.setup)) {
-      // Remove from favorites
+    bool isFavoriteNow = _favorites.any((fav) => fav.setup == joke.setup);
+
+    if (isFavoriteNow) {
+
       _favorites.removeWhere((fav) => fav.setup == joke.setup);
       try {
         final snapshot = await _firestore
@@ -101,7 +106,7 @@ class JokeProvider with ChangeNotifier {
         print('Error removing joke from favorites: $e');
       }
     } else {
-      // Add to favorites
+
       _favorites.add(joke);
       try {
         await _firestore.collection('favorites').add(joke.toJson());
@@ -109,6 +114,10 @@ class JokeProvider with ChangeNotifier {
         print('Error adding joke to favorites: $e');
       }
     }
+
+    joke.isFavorite = !isFavoriteNow;
+
     notifyListeners();
   }
+
 }
