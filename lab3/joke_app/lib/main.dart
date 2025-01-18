@@ -1,7 +1,5 @@
 import 'dart:io';
-
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:joke_app/pages/favorites_screen.dart';
 import 'package:joke_app/pages/random_joke.dart';
@@ -12,7 +10,8 @@ import 'providers/joke_provider.dart';
 import 'pages/joke_list_by_type.dart';
 import 'widgets/joke_card.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'service/firebase_api.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,12 +26,9 @@ void main() async {
   );
   //await
   FirebaseApi().initNotifications();
-  // await FirebaseMessaging.instance.requestPermission();
-  // if (Platform.isAndroid) {
-  //   await FirebaseMessaging.instance.setAutoInitEnabled(true);
-  // }
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -44,6 +40,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => JokeProvider(JokesService())),
       ],
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         title: 'Jokes App',
         theme: ThemeData(
@@ -53,6 +50,9 @@ class MyApp extends StatelessWidget {
           ),
         ),
         home: const HomePage(),
+        routes: {
+          RandomJokeScreen.route: (context) => const RandomJokeScreen(),
+        }
       ),
     );
   }

@@ -34,7 +34,6 @@ class JokeProvider with ChangeNotifier {
     try {
       _jokesByType = await _service.getJokesByType(type);
     } catch (e) {
-      // Handle any exceptions (e.g., log the error)
       print('Error fetching jokes by type: $e');
     }
     isLoading = false;
@@ -48,14 +47,12 @@ class JokeProvider with ChangeNotifier {
     try {
       _randomJoke = await _service.getRandomJoke();
     } catch (e) {
-      // Handle any exceptions
       print('Error fetching random joke: $e');
     }
     isLoading = false;
     notifyListeners();
   }
 
-  // Fetch all joke types
   Future<void> fetchJokeTypes() async {
     try {
       _jokeTypes = await _service.getJokeTypes();
@@ -66,7 +63,6 @@ class JokeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Fetch favorites from Firestore
   Future<void> fetchFavorites() async {
     try {
       final snapshot = await _firestore.collection('favorites').get();
@@ -83,14 +79,12 @@ class JokeProvider with ChangeNotifier {
         );
       }
     } catch (e) {
-      // Handle any exceptions
       print('Error fetching favorites: $e');
     }
     isLoading = false;
     notifyListeners();
   }
 
-  // Toggle favorite status for a joke
   Future<void> toggleFavorite(Joke joke) async {
     if (_favorites.any((fav) => fav.setup == joke.setup)) {
       // Remove from favorites

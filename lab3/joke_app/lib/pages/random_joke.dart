@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 
 class RandomJokeScreen extends StatefulWidget {
   const RandomJokeScreen({super.key});
+  static const route = '/random_joke';
 
   @override
   _RandomJokeScreenState createState() => _RandomJokeScreenState();
